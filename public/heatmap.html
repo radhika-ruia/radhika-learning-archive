@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Radhika's Learning Heatmap</title>
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0-beta.7/dist/cal-heatmap.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.0.0-beta.7/cal-heatmap.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fdfcf9;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    #heatmap {
+      max-width: 1000px;
+      margin: auto;
+    }
+    .tooltip {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>📅 Radhika's Learning Heatmap</h1>
+  <div id="heatmap"></div>
+
+  <script>
+    async function loadLog() {
+      const res = await fetch('../log.json');
+      const data = await res.json();
+
+      const parsed = {};
+      for (const date in data) {
+        const timestamp = new Date(date).getTime() / 1000;
+        parsed[timestamp] = data[date].length;
+      }
+
+      const tooltipMap = {};
+      for (const date in data) {
+        const timestamp = new Date(date).getTime() / 1000;
+        tooltipMap[timestamp] = data[date].map(d => `${d.subject}: ${d.action}`).join('<br>');
+      }
+
+      const cal = new CalHeatmap();
+      cal.paint({
+        itemSelector: "#heatmap",
+        domain: "month",
+        subDomain: "day",
+        range: 6,
+        data: {
+          source: parsed,
+          type: "json",
+        },
+        scale: {
+          type: "linear",
+          color: ["#e0e0e0", "#ffb3b3", "#ff6666", "#cc0000"]
+        },
+        tooltip: {
+          enabled: true,
+          text: (date, value) => tooltipMap[date.getTime() / 1000] || "No uploads"
+        }
+      });
+    }
+
+    loadLog();
+  </script>
+</body>
+</html>
